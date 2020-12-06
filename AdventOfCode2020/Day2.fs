@@ -5,6 +5,13 @@
 open System
 open FSharp.Text.RegexProvider
 
+let example =
+    """
+1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc
+""" |> String.splitLines
+
 let input =
     """
 1-8 n: dpwpmhknmnlglhjtrbpx
@@ -1006,8 +1013,8 @@ let input =
 1-11 s: qsssssspsssss
 4-11 g: zkxvrprgzxjcbg
 11-14 g: ggggggggggggggggg
-6-7 q: qqqqvqhq"""
-    |> (fun s -> s.Split ('\n', StringSplitOptions.RemoveEmptyEntries))
+6-7 q: qqqqvqhq
+""" |> String.splitLines
 
 type Input = Regex< "(?<Min>\d+)\-(?<Max>\d+) (?<Character>[A-Za-z]): (?<Password>\w+)" >
 

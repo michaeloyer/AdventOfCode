@@ -1,4 +1,6 @@
-﻿let exampleNumbers = [
+﻿module AdventOfCode2020.Day1
+
+let exampleNumbers = [
     1721
     979
     366

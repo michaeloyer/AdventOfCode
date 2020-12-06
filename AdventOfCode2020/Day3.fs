@@ -1,7 +1,5 @@
 ﻿module AdventOfCode2020.Day3
 
-open Utils
-
 let example =
     """
 ..##.......
@@ -15,8 +13,7 @@ let example =
 #.##...#...
 #...##....#
 .#..#...#.#
-"""
-    |> splitLines
+""" |> String.splitLines
 
 let input =
     """
@@ -343,8 +340,7 @@ let input =
 .#............#.....#.......#..
 ...#..#...............#........
 .....#.........................
-"""
-    |> splitLines
+""" |> String.splitLines
 
 let traverse down right lines =
     lines

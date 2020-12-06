@@ -1,5 +1,17 @@
-﻿module AdventOfCode2020.Utils
+﻿[<AutoOpen>]
+module AdventOfCode2020.Utils
 
-open System
+type StringOrChar = | Char of char | String of string
 
-let splitLines (str:string) = str.Split([|'\n'; '\r'|], StringSplitOptions.RemoveEmptyEntries)
+
+module String =
+    let splitWithOptions (options:System.StringSplitOptions) (splitOn:string seq) (text:string) =
+        text.Split(splitOn |> Seq.toArray, options)
+
+    let split splitOn text =
+        (splitOn, text) ||> splitWithOptions (System.StringSplitOptions.RemoveEmptyEntries |||
+                                              System.StringSplitOptions.TrimEntries)
+        
+    let splitLines text =
+        text |> split ["\n"; "\r"]
+                       
