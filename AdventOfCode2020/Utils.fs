@@ -1,8 +1,7 @@
 ﻿[<AutoOpen>]
 module AdventOfCode2020.Utils
 
-type StringOrChar = | Char of char | String of string
-
+let between min max value = min <= value && value <= max
 
 module String =
     let splitWithOptions (options:System.StringSplitOptions) (splitOn:string seq) (text:string) =
