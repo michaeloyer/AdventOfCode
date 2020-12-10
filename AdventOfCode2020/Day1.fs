@@ -222,17 +222,6 @@ let part1 sequence =
 // part1 exampleNumbers
 // part1 numbers
 
-module Seq =
-    let permute3 sequence =
-        let isequence = Seq.indexed sequence
-        seq {
-            for (i, x) in isequence do
-            for (j, y) in isequence do
-            for (k, z) in isequence do
-                if (i < j && j < k) then
-                    yield x,y,z
-        }
-
 let part2 sequence = 
     sequence
     |> Seq.permute3 
