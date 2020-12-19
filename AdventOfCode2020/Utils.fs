@@ -32,3 +32,26 @@ module Seq =
                 if (i < j && j < k) then
                     yield x,y,z
         }
+        
+module Array2D =
+    let tryGet arr2d x y =
+        let length1, length2 = Array2D.length1 arr2d, Array2D.length2 arr2d
+        
+        if x |> between 0 (length1 - 1) && y |> between 0 (length2 - 1) then
+            Some (Array2D.get arr2d x y)
+        else
+            None
+    
+    let flattenX arr2d =
+        [|
+            for x in { 0..(Array2D.length1 arr2d - 1) } do
+            for y in { 0..(Array2D.length2 arr2d - 1) } ->
+                arr2d.[x, y]
+        |]
+        
+    let flattenY arr2d =
+        [|
+            for y in { 0..(Array2D.length2 arr2d - 1) } do
+            for x in { 0..(Array2D.length1 arr2d - 1) } ->
+                arr2d.[x, y]
+        |]
