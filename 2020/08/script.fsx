@@ -1,7 +1,5 @@
 ﻿#load "../../PuzzleFile.fsx"
 
-open FParsec
-
 #r "nuget: FParsec"
 
 open FParsec
