@@ -1,48 +1,44 @@
-#r "nuget: FParsec"
-
 type Direction = Up of int | Down of int | Forward of int
 
 module Data =
-    open FParsec
     open System.IO
-
-    module Parsers =
-        let up = pstring "up " >>. pint32 |>> Up
-        let down = pstring "down " >>. pint32 |>> Down
-        let forward = pstring "forward " >>. pint32 |>> Forward
-
-        let direction = choice [ up; down; forward ]
-
     let private readData name =
+        let (|Line|) a = Line(Array.get a 0, Array.get a 1 |> int)
+
         Path.Combine(__SOURCE_DIRECTORY__, $"{name}.txt")
-        |> File.ReadAllText
-        |> run (sepEndBy Parsers.direction newline)
-        |> function
-            | Success (directions, _, _) -> directions
-            | Failure (message, _, _) -> failwith message
+        |> File.ReadLines
+        |> Seq.map (fun line ->
+            match line.Split(" ") with
+            | Line("up", i) -> Up i
+            | Line("down", i) -> Down i
+            | Line("forward", i) -> Forward i
+            | otherwise -> failwithf "Parsing Failed: %A" otherwise
+        )
 
     let example = readData "example"
     let puzzle = readData "puzzle"
 
 module Code =
-    let part1 data =
-        ((0,0), data)
-        ||> Seq.fold (fun (x, y) ->
-            function
-            | Forward i -> (x + i, y)
-            | Up i -> (x, y - i)
-            | Down i -> (x, y + i)
-        )
-        |> (fun (x, y) -> x * y)
-
     type Position = {
         X: int
         Y: int
         Aim: int
-    } with static member Empty = { X = 0; Y = 0; Aim = 0 }
+    }
+    let startPosition = { X = 0; Y = 0; Aim = 0 }
+
+    let multiplyPosition { X = x; Y = y } = x * y
+    let part1 data =
+        (startPosition, data)
+        ||> Seq.fold (fun position ->
+            function
+            | Forward i -> { position with X = position.X + i }
+            | Up i -> { position with Y = position.Y - i }
+            | Down i -> { position with Y = position.Y + i }
+        )
+        |> multiplyPosition
 
     let part2 data =
-        (Position.Empty, data)
+        (startPosition, data)
         ||> Seq.fold (fun position ->
             function
             | Down i -> { position with Aim = position.Aim + i }
@@ -52,7 +48,7 @@ module Code =
                     X = position.X + i
                     Y = position.Y + (position.Aim * i) }
         )
-        |> fun { X = x; Y = y } -> x * y
+        |> multiplyPosition
 
 module Answers =
     open Data
