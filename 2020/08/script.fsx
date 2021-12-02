@@ -1,4 +1,4 @@
-﻿#load "../../PuzzleFile.fsx"
+﻿#load "../PuzzleFile.fsx"
 
 #r "nuget: FParsec"
 

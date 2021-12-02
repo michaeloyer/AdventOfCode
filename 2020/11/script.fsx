@@ -1,5 +1,5 @@
-﻿#load "../../PuzzleFile.fsx"
-#load "../../Utils.fsx"
+﻿#load "../PuzzleFile.fsx"
+#load "../Utils.fsx"
 
 type Seat =
     | Floor

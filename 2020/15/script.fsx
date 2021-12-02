@@ -1,5 +1,5 @@
-﻿#load "../../PuzzleFile.fsx"
-#load "../../Utils.fsx"
+﻿#load "../PuzzleFile.fsx"
+#load "../Utils.fsx"
 
 let getNumbers name = PuzzleFile.text 2020 15 name |> String.split "," |> Array.map int
 let example = getNumbers "example"

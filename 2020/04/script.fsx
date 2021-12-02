@@ -1,5 +1,5 @@
-﻿#load "../../PuzzleFile.fsx"
-#load "../../Utils.fsx"
+﻿#load "../PuzzleFile.fsx"
+#load "../Utils.fsx"
 #r "nuget: FSharp.Text.RegexProvider"
 
 open System.Text.RegularExpressions

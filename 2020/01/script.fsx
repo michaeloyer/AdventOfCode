@@ -1,5 +1,5 @@
-﻿#load "../../PuzzleFile.fsx"
-#load "../../Utils.fsx"
+﻿#load "../PuzzleFile.fsx"
+#load "../Utils.fsx"
 
 let example = PuzzleFile.lines 2020 1 "example" |> Array.map int
 let puzzle = PuzzleFile.lines 2020 1 "puzzle" |> Array.map int

@@ -1,5 +1,5 @@
-﻿#load "../../PuzzleFile.fsx"
-#load "../../Utils.fsx"
+﻿#load "../PuzzleFile.fsx"
+#load "../Utils.fsx"
 
 let loadNumbers = PuzzleFile.lines 2020 10 >> Seq.map int >> List.ofSeq
 let example1 = loadNumbers "example1"
