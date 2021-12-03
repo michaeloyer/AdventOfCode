@@ -3,7 +3,9 @@ type Direction = Up of int | Down of int | Forward of int
 module Data =
     open System.IO
     let private readData name =
-        let (|Line|) a = Line(Array.get a 0, Array.get a 1 |> int)
+        let (|Line|_|) = function
+            | [| direction; amount |] -> Some(direction, amount |> int)
+            | _ -> None
 
         Path.Combine(__SOURCE_DIRECTORY__, $"{name}.txt")
         |> File.ReadLines
