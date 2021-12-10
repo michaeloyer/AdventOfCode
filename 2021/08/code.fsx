@@ -118,25 +118,12 @@ module Code =
                 |> Seq.map (fun (key, value) -> value, key)
                 |> Map.ofSeq
 
-            // printfn $"Competed Map: %A{map}"
-
             output
-            |> List.map (fun o ->
-                match Map.tryFind o map with
-                | Some i -> string i
-                | None ->
-                    let outputMap =
-                        map
-                        |> Map.toList
-                        |> List.map snd
-                        |> List.groupBy (function | 8 | 4 | 7 | 1 -> 1 | 2 | 3 | 5 -> 2 | 0 | 6 | 9 -> 3 | _ -> 0)
-                        |> List.sortBy fst
-                        |> List.map snd
-                    failwith $"Unsolved key: %A{o} in map %A{outputMap}; %A{map}")
+            |> List.map (fun o -> Map.find o map |> string)
             |> String.concat ""
             |> int
 
-        data |> List.indexed |> List.sumBy (fun (i, entry) -> let sum = solveEntry entry in printfn "%i;%i" i sum; sum)
+        data |> List.sumBy solveEntry
 
 module Answers =
     open Data
@@ -152,4 +139,3 @@ module Answers =
         printfn $"{nameof(``Puzzle Part 1``)}: {``Puzzle Part 1``}"
         printfn $"{nameof(``Example Part 2``)}: {``Example Part 2``}"
         printfn $"{nameof(``Puzzle Part 2``)}: {``Puzzle Part 2``}"
-
