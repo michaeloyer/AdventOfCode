@@ -31,7 +31,7 @@ module Code =
         data
         |> Seq.map Set
         |> Seq.chunkBySize 3
-        |> Seq.sumBy ((Seq.reduce Set.intersect) >> Seq.head >> letterPriority)
+        |> Seq.sumBy (Set.intersectMany >> Seq.head >> letterPriority)
 
 module Answers =
     open Data
