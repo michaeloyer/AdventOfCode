@@ -8,32 +8,25 @@ module Data =
     let puzzle = readData "puzzle"
 
 module Code =
-    module Set =
-        let overlaps set1 set2 =
-            Set.forall (fun item -> Set.contains item set2) set1
+    let parseRanges (text:string) =
+        let numbers = text.Split(',', '-')
+        (Set [ (int numbers[0])..(int numbers[1])],
+         Set [ (int numbers[2])..(int numbers[3])])
 
-    let pairSet (pairText:string) =
-        let range = pairText.Split('-')
-        Set [ (int range[0])..(int range[1])]
-    let part1 (data: string seq) =
+    let part1 data =
         data
-        |> Seq.map (fun line ->
-            let pairs = line.Split(',')
-            pairSet pairs[0], pairSet pairs[1]
-        )
+        |> Seq.map parseRanges
         |> Seq.filter (fun (set1, set2) ->
-            Set.overlaps set1 set2 || Set.overlaps set2 set1
+            Set.isSubset set1 set2 || Set.isSuperset set1 set2
         )
         |> Seq.length
 
-
-    let part2 (data: string seq) =
+    let part2 data =
         data
-        |> Seq.map (fun line ->
-            let pairs = line.Split(',')
-            pairSet pairs[0], pairSet pairs[1]
+        |> Seq.map parseRanges
+        |> Seq.filter (fun (set1, set2) ->
+            Set.exists (fun item -> Set.contains item set2) set1
         )
-        |> Seq.filter (fun (set1, set2) -> Set.intersect set1 set2 |> Seq.isEmpty|> not)
         |> Seq.length
 
 module Answers =
