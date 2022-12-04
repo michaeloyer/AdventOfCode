@@ -1,36 +1,37 @@
-module Data =
-    open System.IO
+type PuzzleInput = { FullText: string; Lines: string list }
+
+module AdventOfCode =
     open type System.StringSplitOptions
-    
+
+    let parseGroups (text:string) =
+        text.Split("\n\n", RemoveEmptyEntries)
+        |> Array.map (fun group ->
+            group.Split("\n", RemoveEmptyEntries) |> Seq.map int |> Seq.sum
+        )
+
+    let part1 (puzzle:PuzzleInput) =
+        puzzle.FullText
+        |> parseGroups
+        |> Array.max
+
+    let part2 (puzzle:PuzzleInput) =
+        puzzle.FullText
+        |> parseGroups
+        |> Seq.sortDescending |> Seq.take 3 |> Seq.sum
+
+module Input =
+    open System.IO
     let private readData name =
-        Path.Combine(__SOURCE_DIRECTORY__, $"{name}.txt")
-        |> File.ReadAllText
-        |> fun text -> text.Split("\n\n", RemoveEmptyEntries)
-        |> Array.map (fun group -> group.Split("\n", RemoveEmptyEntries) |> Seq.map int |> Seq.sum)
+        let lines = File.ReadAllLines(Path.Combine(__SOURCE_DIRECTORY__, $"{name}.txt"))
+        { Lines = List.ofArray lines
+          FullText = String.concat "\n" lines }
 
-    let example = readData "example"
-    let puzzle = readData "puzzle"
+    let rec example = readData (nameof example)
+    let rec puzzle = readData (nameof puzzle)
 
-module Code =
-    let part1 (data:int array) =
-        Array.max data
-
-
-    let part2 data =
-        data |> Seq.sortDescending |> Seq.take 3 |> Seq.sum
-
-module Answers =
-    open Data
-    open Code
-
-    let ``Example Part 1`` = part1 example
-    let ``Puzzle Part 1`` = part1 puzzle
-    let ``Example Part 2`` = part2 example
-    let ``Puzzle Part 2`` = part2 puzzle
-
-    do
-        printfn $"{nameof(``Example Part 1``)}: {``Example Part 1``}"
-        printfn $"{nameof(``Puzzle Part 1``)}: {``Puzzle Part 1``}"
-        printfn $"{nameof(``Example Part 2``)}: {``Example Part 2``}"
-        printfn $"{nameof(``Puzzle Part 2``)}: {``Puzzle Part 2``}"
-
+module Output =
+    fsi.AddPrintTransformer(fun (input:PuzzleInput) -> {| LineCount = input.Lines.Length |})
+    let rec ``Example Part 1`` = let answer = AdventOfCode.part1 Input.example in printfn $"{nameof ``Example Part 1``}: {answer}"; answer
+    let rec ``Puzzle Part 1`` = let answer = AdventOfCode.part1 Input.puzzle in printfn $"{nameof ``Puzzle Part 1``}: {answer}"; answer
+    let rec ``Example Part 2`` = let answer = AdventOfCode.part2 Input.example in printfn $"{nameof ``Example Part 2``}: {answer}"; answer
+    let rec ``Puzzle Part 2`` = let answer = AdventOfCode.part2 Input.puzzle in printfn $"{nameof ``Puzzle Part 2``}: {answer}"; answer
