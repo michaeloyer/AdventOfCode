@@ -1,10 +1,9 @@
-#r "nuget:FParsec"
-
 type PuzzleInput = { FullText: string; Lines: string list }
 
 module AdventOfCode =
+    open System
     open System.Collections.Generic
-    open FParsec
+    open System.Text.RegularExpressions
 
     type Instruction = {
         Count: int
@@ -12,19 +11,14 @@ module AdventOfCode =
         From: int
     }
 
-    let stacksParser =
-        let crate =
-            choice [
-                skipArray 3 (skipChar ' ') |>> fun _ -> ' '
-                skipChar '[' >>. letter .>> skipChar ']'
-            ]
-
-        let crateLine = attempt (sepBy crate (skipChar ' ') .>> skipNewline)
-
-        let crates = many crateLine
-
-        crates
-        |>> fun listOfLists ->
+    let parseStacks lines =
+        lines
+        |> List.takeWhile (fun line -> not (String.exists Char.IsDigit line))
+        |> List.map (fun line -> [
+            for i in 1..4..(line.Length) do
+                yield line[i]
+        ])
+        |> fun listOfLists ->
             let crates = array2D listOfLists
             let stacks = Array.init (Array2D.length2 crates) (fun _ -> Stack<char>())
 
@@ -35,28 +29,24 @@ module AdventOfCode =
                         stacks[y].Push(Array2D.get crates x y)
 
             stacks
-    let instructionParser =
-        skipString "move " >>. pint32 .>> skipString " from " .>>. pint32 .>> skipString " to " .>>. pint32
-        |>> (fun ((count, fromStack), toStack) -> {
-            Count = count
-            To = toStack - 1
-            From = fromStack - 1
-        })
 
-    let parser =
-        stacksParser
-        .>> (skipManyTill skipAnyChar skipNewline)
-        .>> skipNewline
-        .>>. (sepEndBy instructionParser skipNewline)
+    let parseInstructions lines =
+        let parseInstruction line =
+            let regexMatch = Regex.Match(line, "move (?<count>\\d+) from (?<from>\\d+) to (?<to>\\d+)")
+            { Count = int regexMatch.Groups["count"].Value
+              To = int regexMatch.Groups["to"].Value - 1
+              From = int regexMatch.Groups["from"].Value - 1 }
 
-    let parse text =
-        match run parser text with
-        | Success ((stacks, instructions), _, _) -> (stacks, instructions)
-        | Failure (error, _, _) -> failwith error
+        lines
+        |> List.skipWhile (not << String.IsNullOrEmpty)
+        |> List.skip 1
+        |> List.map parseInstruction
 
+    let parse lines =
+        parseStacks lines, parseInstructions lines
 
     let part1 (puzzle:PuzzleInput) =
-        let stacks, instructions = parse puzzle.FullText
+        let stacks, instructions = parse puzzle.Lines
         for instruction in instructions do
             for _ in 1..instruction.Count do
                 stacks[instruction.From].Pop() |> stacks[instruction.To].Push
@@ -66,7 +56,7 @@ module AdventOfCode =
         |> String.concat ""
 
     let part2 (puzzle:PuzzleInput) =
-        let stacks, instructions = parse puzzle.FullText
+        let stacks, instructions = parse puzzle.Lines
 
         for instruction in instructions do
             let crates = Stack [
@@ -92,6 +82,8 @@ module Input =
     let rec puzzle = readData (nameof puzzle)
 
 module Output =
+    type PuzzleInputOutput = { LineCount: int }
+    fsi.AddPrintTransformer(fun (input:PuzzleInput) -> { LineCount = input.Lines.Length })
     let rec ``Example Part 1`` = let answer = AdventOfCode.part1 Input.example in printfn $"{nameof ``Example Part 1``}: {answer}"; answer
     let rec ``Puzzle Part 1`` = let answer = AdventOfCode.part1 Input.puzzle in printfn $"{nameof ``Puzzle Part 1``}: {answer}"; answer
     let rec ``Example Part 2`` = let answer = AdventOfCode.part2 Input.example in printfn $"{nameof ``Example Part 2``}: {answer}"; answer
