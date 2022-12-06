@@ -1,14 +1,14 @@
 type PuzzleInput = { FullText: string; Lines: string list }
 
 module AdventOfCode =
+    open System.Collections.Generic
+
     let findMarker charCount (line:string)  =
             line
             |> Seq.windowed charCount
-            |> Seq.mapi (fun i chars ->
-                i + charCount, Set chars
-            )
-            |> Seq.find (fun (_, set) -> Set.count set = charCount)
-            |> fst
+            |> Seq.findIndex (fun chars -> chars |> Array.forall (HashSet().Add))
+            |> (+) charCount
+
     let part1 (puzzle:PuzzleInput) =
         List.map (findMarker 4) puzzle.Lines
 
