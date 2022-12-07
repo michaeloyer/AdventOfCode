@@ -2,5 +2,5 @@
 
 This repo contains solutions for the [Advent of Code](https://adventofcode.com/) problems.
 
-Language: **F#**
+Language: **F#, Rust**
 
