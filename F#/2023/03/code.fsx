@@ -1,101 +1,99 @@
-
 type PuzzleInput = { FullText: string; Lines: string list }
 
 module AdventOfCode =
     open System
     open System.Text.RegularExpressions
 
-    module Array2D =
-        let tryGet x y arr =
+    type PartNumber = {
+        Index: int
+        Value: int
+    }
+
+    type GridItem =
+        | PartNumber of PartNumber
+        | Gear
+        | Empty
+
+    let getPartNumberMap ({ Lines = lines }:PuzzleInput) =
+        lines
+        |> Seq.indexed
+        |> Seq.collect (fun (y, line) -> [
+            for regexMatch in Regex.Matches(line, @"\d+") do
+                y, regexMatch
+
+        ])
+        |> Seq.mapi (fun index (y, regexMatch) -> [
+            let partNumber = {
+                Index = index
+                Value = int regexMatch.Value
+            }
+
+            for x in regexMatch.Index .. (regexMatch.Index + regexMatch.Length - 1) do
+                yield (x, y), partNumber
+        ])
+        |> Seq.collect id
+        |> Map
+
+    module Grid =
+        let create ({ Lines = lines } as puzzle) =
+            let partNumberMap = getPartNumberMap puzzle
+
+            Array2D.init lines.Length lines[0].Length (fun x y ->
+                match lines[y][x] with
+                | c when Char.IsDigit c -> PartNumber(Map.find(x,y) partNumberMap)
+                | '.' -> Empty
+                | _ -> Gear
+            )
+
+        let getItem x y arr =
             let xLength = Array2D.length1 arr
             let yLength = Array2D.length2 arr
 
             if x < 0 || x >= xLength || y < 0 || y >= yLength then
-                None
+                Empty
             else
-                Some arr[x,y]
+                arr[x,y]
 
-    let part1 ({ Lines = lines }:PuzzleInput) =
-        let arr = Array2D.init lines.Length lines[0].Length (fun x y -> lines[y][x])
-
-        lines
-        |> Seq.indexed
-        |> Seq.collect (fun (y, line) -> [
-            for m in Regex.Matches(line, @"\b\d") do
-                let x = m.Index
-                x,y
-        ])
-        |> Seq.sumBy (fun (x,y) ->
-            let number = Regex.Match(lines[y].Substring(x), "\\d+").Value
-
-            let searchIndecies = seq {
-                let xMin = x - 1
-                let xMax = x + number.Length
-                for x in xMin .. xMax do
-                    yield x,(y-1)
-                    yield x,(y+1)
-
-                yield xMin, y
-                yield xMax, y
+        let getGearPartNumbers grid =
+            let gearCoordinates = seq {
+                for x in 0 .. Array2D.length1 grid - 1 do
+                    for y in 0 .. Array2D.length2 grid - 1 do
+                        match Array2D.get grid x y with
+                        | Gear -> yield x,y
+                        | _ -> ()
             }
 
-            let isPartNumber =
-                searchIndecies |> Seq.exists (fun (x,y) ->
-                    if x < 0 || y < 0 || x >= arr.GetLength(0) || y >= arr.GetLength(1) then
-                        false
-                    else
-                        let char = arr[x,y]
-                        not (Char.IsDigit char || char = '.')
-                )
+            let gearPartNumbers = [
+                for (x,y) in gearCoordinates do
+                    [
+                        for x in x-1..x+1 do
+                            for y in y-1..y+1 do
+                                match getItem x y grid with
+                                | PartNumber partNumber -> partNumber
+                                | _ -> ()
+                    ]
+                    |> List.distinct
+            ]
 
-            if isPartNumber then
-                int number
-            else
-                0
+            gearPartNumbers
+
+    let part1 (puzzle:PuzzleInput) =
+        Grid.create puzzle
+        |> Grid.getGearPartNumbers
+        |> Seq.collect id
+        |> Seq.distinct
+        |> Seq.sumBy (fun partNumber -> partNumber.Value)
+
+    let part2 (puzzle:PuzzleInput) =
+        Grid.create puzzle
+        |> Grid.getGearPartNumbers
+        |> Seq.sumBy (fun partNumbers ->
+            partNumbers
+            |> List.distinct
+            |> function
+                | [a;b]-> a.Value * b.Value
+                | _ -> 0
         )
-
-    let part2 ({ Lines = lines }:PuzzleInput) =
-        let arr = Array2D.init lines.Length lines[0].Length (fun x y -> lines[y][x])
-
-        let startNumberIndecies =
-            lines
-            |> Seq.indexed
-            |> Seq.collect (fun (y, line) -> [
-                for m in Regex.Matches(line, @"\b\d") do
-                    let x = m.Index
-                    x,y
-            ])
-
-        let gridNumbers = Array2D.zeroCreate (arr.GetLength(0)) (arr.GetLength(1))
-
-        for (index, (x, y)) in startNumberIndecies |> Seq.indexed do
-            let numberText = Regex.Match(lines[y].Substring(x), "\\d+").Value
-            let number = int numberText
-            for i in x .. x + numberText.Length - 1 do
-                gridNumbers[i, y] <- Some(index, number)
-
-        List.sum [
-            for x in 0 .. arr.GetLength(0) - 1 do
-                for y in 0 .. arr.GetLength(1) - 1 do
-                    let char = arr[x, y]
-                    if Char.IsDigit char || char = '.' then
-                        0
-                    else
-                        let numbers =
-                            [
-                                for a in x-1 .. x+1 do
-                                    for b in y-1 .. y+1 do
-                                        yield gridNumbers |> Array2D.tryGet a b |> Option.flatten
-                            ]
-                            |> List.distinct
-                            |> List.choose id
-                            |> List.map snd
-
-                        if numbers.Length = 2 then
-                            numbers |> List.reduce (*)
-                        else
-                            0
-        ]
 
 module Input =
     open System.IO
