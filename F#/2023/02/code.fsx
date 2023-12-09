@@ -1,45 +1,41 @@
-#r "nuget:FParsec"
-
 type PuzzleInput = { FullText: string; Lines: string list }
 
 module AdventOfCode =
-    open FParsec
-
     type Cubes = {
         Red: int
         Green: int
         Blue: int
-    } with static member Default = { Red = 0; Blue = 0; Green = 0 }
+    }
 
     type Game = {
         Id: int
         Rounds: Cubes list
     }
 
-    let readGame line =
-        let cubeCount color = pint32 .>> spaces .>> skipString color
-        let round =
-            choice [
-                attempt(cubeCount "red" |>> fun count -> { Cubes.Default with Red = count })
-                attempt(cubeCount "green" |>> fun count -> { Cubes.Default with Green = count })
-                attempt(cubeCount "blue" |>> fun count -> { Cubes.Default with Blue = count })
-            ]
+    let readGame (line:string) =
+        let id, roundsText =
+            let arr = line.Split(": ")
+            int (arr[0].Substring("Game ".Length)), arr[1]
 
-        let rounds =
-            sepBy1 round (skipChar ',' .>> spaces)
-            |>> List.reduce (fun roundA roundB -> {
-                Red = roundA.Red + roundB.Red
-                Blue = roundA.Blue + roundB.Blue
-                Green = roundA.Green + roundB.Green
-            })
+        let readRound (round:string) =
+            ({ Red = 0; Green = 0; Blue = 0 }, round.Split(", "))
+            ||> Array.fold (
+                fun state cube ->
+                    let count, color =
+                        let arr = cube.Split(" ")
+                        int arr[0], arr[1]
 
-        let game =
-            pstring "Game " >>. pint32 .>> skipString ": " .>>. sepBy1 rounds (skipChar ';' .>> spaces)
-            |>> fun (id, rounds) -> { Id = id; Rounds = rounds }
+                    match color with
+                    | "red" -> { state with Red = count }
+                    | "green" -> { state with Green = count }
+                    | "blue" -> { state with Blue = count }
+                    | _ -> failwith $"Invalid color {color}"
+            )
 
-        run game line |> function
-        | Success (game, _, _) -> game
-        | Failure (err, _, _) -> failwith err
+        let rounds = roundsText.Split("; ") |> Array.map readRound |> Array.toList
+
+        { Id = id; Rounds = rounds }
+
     let part1 (puzzle:PuzzleInput) = List.sum [
         for line in puzzle.Lines do
             let game = readGame line
